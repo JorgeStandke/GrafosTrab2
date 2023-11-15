@@ -1,8 +1,8 @@
 import java.util.ArrayList;
 
-public class grafoEuleriano {
+public class GrafoEuleriano {
 
-    int[][] grafo = {
+    private int[][] grafo = {
         //    A  B  C  D  E  F  G  H  I  J  K  L  M
             { 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},  // A
             { 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0},  // B
@@ -18,12 +18,18 @@ public class grafoEuleriano {
             { 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1},  // L
             { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0}   // M
         };
-    int[] peso = {3, 1, 1, 3, 1, 1, 3, 1, 2, 4, 2, 2, 1, 3, 1, 2, 1, 2, 1};
+    private int[] peso = {3, 1, 1, 3, 1, 1, 3, 1, 2, 4, 2, 2, 1, 3, 1, 2, 1, 2, 1};
 
-    ArrayList<Aresta> arestas = getArestasDoGrafo();
+    private ArrayList<Aresta> arestas = getArestasDoGrafo();
 
     public static void main(String[] args) {
-        
+        new GrafoEuleriano();
+    }
+
+    private GrafoEuleriano() {
+        for(Aresta aresta: arestas){
+            System.out.println(aresta.toString());
+        }
     }
 
     private ArrayList<Aresta> getArestasDoGrafo() {
@@ -38,6 +44,8 @@ public class grafoEuleriano {
                 }
             }
         }
+
+        return arestas;
     }
 
 }

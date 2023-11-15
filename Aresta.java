@@ -3,7 +3,7 @@ public class Aresta {
     private int w;
     private int peso;
 
-    public Aresta(final int u, final int w, final int nome, final int peso) {
+    public Aresta(final int u, final int w, final int peso) {
         this.setU(u);
         this.setW(w);
         this.setPeso(peso);
@@ -33,4 +33,8 @@ public class Aresta {
         this.peso = peso;
     }
 
+    @Override
+    public String toString() {
+        return "(" + getU() + "," + getW() + ") custo: " + getPeso();
+    }
 }
