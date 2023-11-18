@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class grafoEuleriano {
@@ -56,6 +57,7 @@ public class grafoEuleriano {
         int pivo = 0;
         int valCaminho = 0;
         ArrayList<Vertice> vertices = new ArrayList<>();
+        ArrayList<Vertice> verticesLigados = new ArrayList<>();
 
         // Criação dos Vértices com suas respectivas arestas;
         for (int i = 0; i < v; i++) {
@@ -116,7 +118,6 @@ public class grafoEuleriano {
                 pivo = Integer.parseInt(matrizD2[0][k]);
 
             for(int i = 0; i <= matrizD[0].length - 1; i++){
-                ArrayList<Vertice> verticesLigados = new ArrayList<>();
                 //Mudando o pivô
                 pivo = Integer.parseInt(matrizD2[0][i]);
 
@@ -133,7 +134,7 @@ public class grafoEuleriano {
 
                         //Fazendo a verificação do Dijkstra e se der true substituindo
                         if(Integer.parseInt(matrizD2[0][vertices.get(i).getArestasDoVertice().get(j).getW()]) > pivo + valCaminho){
-                            matrizD2[0][j] = String.valueOf(pivo + valCaminho);
+                            matrizD2[0][vertices.get(i).getArestasDoVertice().get(j).getW()] = String.valueOf(pivo + valCaminho);
                             matrizD2[1][i] = vertices.get(j).getNome();
                         }
 
@@ -150,7 +151,17 @@ public class grafoEuleriano {
             System.out.println(matrizD2.toString());
         }
 
-        return "AOBA";
-    }
+        // Variavel para armazenar a string da matriz
+        StringBuilder matrizString = new StringBuilder();
 
+        // Loop para construir a string da matriz
+        for (int i = 0; i < matrizCusto.length; i++) {
+            for (int j = 0; j < matrizCusto[i].length; j++) {
+                matrizString.append(matrizCusto[i][j]).append("\t");
+            }
+            matrizString.append("\n");
+        }
+
+        return matrizString.toString();
+    }
 }
