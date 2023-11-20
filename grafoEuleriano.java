@@ -1,10 +1,15 @@
+//João Vitor Schmidt e Jorge Henrique Rigo Standke
+
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Stack;
 
 public class grafoEuleriano {
 
     private int[][] grafo = {
+        // Matriz de adjacência
         //    A  B  C  D  E  F  G  H  I  J  K  L  M
             { 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},  // A
             { 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0},  // B
@@ -19,21 +24,69 @@ public class grafoEuleriano {
             { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0},  // K
             { 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1},  // L
             { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0}   // M
-        };
+    };
+    
     private int[] peso = {3, 1, 1, 3, 1, 1, 3, 1, 2, 4, 2, 2, 1, 3, 1, 2, 1, 2, 1};
-
     private ArrayList<Aresta> arestas = getArestasDoGrafo();
+    private int custoTotal = 0;
 
     public static void main(String[] args) {
         new grafoEuleriano();
     }
 
     private grafoEuleriano() {
-        for(Aresta aresta: arestas){
+        // Etapa 1: Imprimir as arestas
+        System.out.println("Arestas do Grafo:");
+        for (Aresta aresta : arestas) {
             System.out.println(aresta.toString());
         }
+    
+        // Etapa 2: Aplicar o algoritmo de Dijkstra para cada vértice ímpar
+        System.out.println("\nResultados do Algoritmo de Dijkstra:");
+    
+        int v = grafo.length;
+        int[][] matrizCustoTotal = new int[v][v]; // Adicione esta linha
+    
+        for (int i = 0; i < v; i++) {
+            if (grauVerticeImpar(i)) {
+                System.out.println("\nDijkstra a partir do vértice " + (char) ('A' + i) + ":");
+                int[][] matrizCustoParcial = dijkstra(i);
+    
+                for (int j = 0; j < v; j++) {
+                    if (i != j && matrizCustoParcial[i][j] != Integer.MAX_VALUE) {
+                        matrizCustoTotal[i][j] = matrizCustoParcial[i][j];
+                        System.out.println((char) ('A' + i) + " para " + (char) ('A' + j) + ": " + matrizCustoParcial[i][j]);
+                    }
+                }
+            }
+        }
+    
+        // Etapa 3: Exibir a matriz de custo
+        System.out.println("\nMatriz de Custo:");
+        exibirMatriz(matrizCustoTotal);
+    
+        // Etapa 4: Eulerizar o grafo
+        eulerizarGrafo();
+    }
 
-        System.out.println(dijkstra());
+    private void exibirMatriz(int[][] matriz) {
+        int v = matriz.length;
+    
+        // Imprimir cabeçalho
+        System.out.print("\t");
+        for (int i = 0; i < v; i++) {
+            System.out.print((char) ('A' + i) + "\t");
+        }
+        System.out.println();
+    
+        // Imprimir linhas
+        for (int i = 0; i < v; i++) {
+            System.out.print((char) ('A' + i) + "\t");
+            for (int j = 0; j < v; j++) {
+                System.out.print(matriz[i][j] + "\t");
+            }
+            System.out.println();
+        }
     }
 
     private ArrayList<Aresta> getArestasDoGrafo() {
@@ -52,116 +105,203 @@ public class grafoEuleriano {
         return arestas;
     }
 
-    private String dijkstra(){
-        int v = grafo[0].length;
-        int pivo = 0;
-        int valCaminho = 0;
-        ArrayList<Vertice> vertices = new ArrayList<>();
-        ArrayList<Vertice> verticesLigados = new ArrayList<>();
+    private void eulerizarGrafo() {
+        // Encontrar o emparelhamento mínimo
+        int[][] emparelhamento = encontrarEmparelhamentoMinimo();
 
-        // Criação dos Vértices com suas respectivas arestas;
-        for (int i = 0; i < v; i++) {
-            char letra = (char) ('A' + i);
-            Vertice vertice = new Vertice(Character.toString(letra), null, new ArrayList<>());
-            vertices.add(vertice);
-        }
-
-        for (int i = 0; i < v; i++) {
-            // Criar uma nova lista de arestas para cada vértice
-            List<Aresta> arestasDoVertice = new ArrayList<>();
-        
-            for (int j = 0; j < v; j++) {
-                if (arestas.get(j).getU() == i) {
-                    arestasDoVertice.add(arestas.get(j));
-                }
-        
-                if (arestas.get(j).getW() == i) {
-                    // Adiciona a aresta ao vértice de destino também
-                    arestasDoVertice.add(arestas.get(j));
+        // Adicionar as arestas do emparelhamento ao grafo
+        for (int i = 0; i < grafo.length; i++) {
+            for (int j = 0; j < grafo.length; j++) {
+                if (emparelhamento[i][j] == 1) {
+                    grafo[i][j] = 1;
+                    grafo[j][i] = 1; // Arestas não dirigidas
                 }
             }
-        
-            vertices.get(i).setArestasDoVertice(arestasDoVertice);
-        }        
+        }
 
-        int[][] matrizCusto = {
-                //    A  B  C  D  E  F  G  H  I  J  K  L  M
-                    { 0, 999, 999, 999, 999, 999, 999, 999, 999, 999, 999, 999, 999},  // A
-                    { 999, 0, 999, 999, 999, 999, 999, 999, 999, 999, 999, 999, 999},  // B
-                    { 999, 999, 0, 999, 999, 999, 999, 999, 999, 999, 999, 999, 999},  // C
-                    { 999, 999, 999, 0, 999, 999, 999, 999, 999, 999, 999, 999, 999},  // D
-                    { 999, 999, 999, 999, 0, 999, 999, 999, 999, 999, 999, 999, 999},  // E
-                    { 999, 999, 999, 999, 999, 0, 999, 999, 999, 999, 999, 999, 999},  // F
-                    { 999, 999, 999, 999, 999, 999, 0, 999, 999, 999, 999, 999, 999},  // G
-                    { 999, 999, 999, 999, 999, 999, 999, 0, 999, 999, 999, 999, 999},  // H
-                    { 999, 999, 999, 999, 999, 999, 999, 999, 0, 999, 999, 999, 999},  // I
-                    { 999, 999, 999, 999, 999, 999, 999, 999, 999, 0, 999, 999, 999},  // J
-                    { 999, 999, 999, 999, 999, 999, 999, 999, 999, 999, 0, 999, 999},  // K
-                    { 999, 999, 999, 999, 999, 999, 999, 999, 999, 999, 999, 0, 999},  // L
-                    { 999, 999, 999, 999, 999, 999, 999, 999, 999, 999, 999, 999, 0}   // M
-                };
+        // Encontrar ciclo euleriano no grafo eulerizado
+        List<Integer> cicloEuleriano = hierholzerAlgorithm();
 
-        String[][] matrizD = {
-            { "999", "999", "999", "999", "999", "999", "999", "999", "999", "999", "999", "999", "999"}, //Valores com o menor caminho
-            { "", "", "", "", "", "", "", "", "", "", "", "", ""}, // Pai
-            { "", "", "", "", "", "", "", "", "", "", "", "", ""} // Fila (verificar por qual vértice Dijkstra já passou)
-        };
+        // Imprimir o ciclo euleriano e seu custo total
+        System.out.println("\nCiclo Euleriano:");
+        int custoTotal = 0;
+        for (int i = 0; i < cicloEuleriano.size() - 1; i++) {
+            int origem = cicloEuleriano.get(i);
+            int destino = cicloEuleriano.get(i + 1);
+            System.out.println((char) ('A' + origem) + " -> " + (char) ('A' + destino) + ", Peso: " + grafo[origem][destino]);
+            custoTotal += grafo[origem][destino];
+        }
 
-        //Tentativa de Dijkstra
-        for(int k = 0; k <= matrizCusto.length; k++){
-            //Zerando a matriz D
-            String[][] matrizD2 = matrizD.clone();
+        // Adicionar a aresta de retorno ao início do ciclo
+        int origem = cicloEuleriano.get(cicloEuleriano.size() - 1);
+        int destino = cicloEuleriano.get(0);
+        System.out.println((char) ('A' + origem) + " -> " + (char) ('A' + destino) + ", Peso: " + grafo[origem][destino]);
+        custoTotal += grafo[origem][destino];
 
-            //Definindo qual o vértice de origem daquele dijkstra
-                matrizD2[0][k] = String.valueOf(0);
-                matrizD2[1][k] = "nil";
-                pivo = Integer.parseInt(matrizD2[0][k]);
+        System.out.println("Custo Total do Ciclo Euleriano: " + custoTotal);
+    }
 
-            for(int i = 0; i <= matrizD[0].length - 1; i++){
-                //Mudando o pivô
-                pivo = Integer.parseInt(matrizD2[0][i]);
+    private int[][] encontrarEmparelhamentoMinimo() {
+    int[][] emparelhamento = new int[grafo.length][grafo.length];
+    boolean[] visitados = new boolean[grafo.length];
+    
+    for (int i = 0; i < grafo.length; i++) {
+        if (grauVerticeImpar(i)) {
+            Arrays.fill(visitados, false);
+            aumentarCaminho(i, emparelhamento, visitados);
+        }
+    }
 
-                for(int j = 0; j <= vertices.get(i).getArestasDoVertice().size()-1; j++){
+    return emparelhamento;
+    }
 
-                    //Verifica se está olhando vértices já visitados
-                    if(matrizD2[2][i] == ""){
+    private boolean aumentarCaminho(int vertice, int[][] emparelhamento, boolean[] visitados) {
+        for (int v = 0; v < grafo.length; v++) {
+            if (grafo[vertice][v] == 1 && !visitados[v]) {
+                visitados[v] = true;
+    
+                if (emparelhamento[vertice][v] == 0 || aumentarCaminho(v, emparelhamento, visitados)) {
+                    emparelhamento[vertice][v] = 1;
+                    emparelhamento[v][vertice] = 1; // Atualização para um grafo não dirigido
+                    return true;
+                }
+            }
+        }
+    
+        return false;
+    }
 
-                        //Adicionando a um ArrayList(Fiz mais para acompanhar o processo) os vértices ligados ao pivo no momento
-                        verticesLigados.add(vertices.get(vertices.get(i).getArestasDoVertice().get(j).getW()));
-
-                        //Salvando o valor do caminho entre o vértice salvo, e, o pivô
-                        valCaminho = verticesLigados.get(j).getArestasDoVertice().get(j).getPeso();
-
-                        //Fazendo a verificação do Dijkstra e se der true substituindo
-                        if(Integer.parseInt(matrizD2[0][vertices.get(i).getArestasDoVertice().get(j).getW()]) > pivo + valCaminho){
-                            matrizD2[0][vertices.get(i).getArestasDoVertice().get(j).getW()] = String.valueOf(pivo + valCaminho);
-                            matrizD2[1][i] = vertices.get(j).getNome();
-                        }
-
-                    }else{
-                        break;
+    private int[][] dijkstra(int origem) {
+        int v = grafo.length;
+        int[][] matrizCusto = new int[v][v];
+    
+        // Inicializar matriz de custo com valores infinitos
+        for (int i = 0; i < v; i++) {
+            Arrays.fill(matrizCusto[i], Integer.MAX_VALUE);
+        }
+    
+        matrizCusto[origem][origem] = 0;
+    
+        PriorityQueue<Integer> filaPrioridade = new PriorityQueue<>();
+        filaPrioridade.add(origem);
+    
+        while (!filaPrioridade.isEmpty()) {
+            int u = filaPrioridade.poll();
+    
+            for (int w = 0; w < v; w++) {
+                if (grafo[u][w] == 1) {
+                    int pesoUW = peso[getIndexAresta(u, w)];
+                    if (matrizCusto[origem][w] > matrizCusto[origem][u] + pesoUW) {
+                        matrizCusto[origem][w] = matrizCusto[origem][u] + pesoUW;
+                        filaPrioridade.add(w);
                     }
-
                 }
-
-                //Marcando que o vértice já foi verificado
-                matrizD2[2][i] = "X";
             }
-
-            System.out.println(matrizD2.toString());
         }
+    
+        // Retornar a matriz de custo
+        return matrizCusto;
+    }
 
-        // Variavel para armazenar a string da matriz
-        StringBuilder matrizString = new StringBuilder();
-
-        // Loop para construir a string da matriz
-        for (int i = 0; i < matrizCusto.length; i++) {
-            for (int j = 0; j < matrizCusto[i].length; j++) {
-                matrizString.append(matrizCusto[i][j]).append("\t");
+    private List<Integer> hierholzerAlgorithm() {
+        List<Integer> cicloEuleriano = new ArrayList<>();
+        Stack<Integer> pilha = new Stack<>();
+        int verticeAtual = encontrarVerticeInicial();
+    
+        pilha.push(verticeAtual);
+    
+        while (!pilha.isEmpty()) {
+            if (grauVertice(verticeAtual) > 0) {
+                pilha.push(verticeAtual);
+                int proximoVertice = encontrarProximoVertice(verticeAtual, grafo);
+                
+                // Adicione o peso da aresta ao custo total
+                int pesoAresta = grafo[verticeAtual][proximoVertice];
+                custoTotal += pesoAresta;
+    
+                removerAresta(verticeAtual, proximoVertice);
+                verticeAtual = proximoVertice;
+            } else {
+                cicloEuleriano.add(verticeAtual);
+                verticeAtual = pilha.pop();
             }
-            matrizString.append("\n");
         }
+    
+        return cicloEuleriano;
+    }
+    
+    private void removerAresta(int u, int v) {
+        // Reduzir o peso da aresta
+        int pesoAresta = grafo[u][v];
+        grafo[u][v] = 0;
+        grafo[v][u] = 0;
+    
+        arestas.removeIf(aresta -> (aresta.getU() == u && aresta.getW() == v && grafo[u][v] == 0) ||
+                           (aresta.getU() == v && aresta.getW() == u && grafo[v][u] == 0) ||
+                           (aresta.getU() == u && aresta.getW() == v && grafo[u][v] < pesoAresta) ||
+                           (aresta.getU() == v && aresta.getW() == u && grafo[v][u] < pesoAresta));
+    
+        custoTotal -= pesoAresta;
+    }
+    
+    private int encontrarProximoVertice(int vertice, int[][] grafoCopia) {
+        for (int v = 0; v < grafoCopia.length; v++) {
+            if (grafoCopia[vertice][v] > 0) {
+                // Reduzir o peso da aresta
+                grafoCopia[vertice][v]--;
+                grafoCopia[v][vertice]--;
+    
+                // Remover completamente a aresta se o peso se tornar zero
+                if (grafoCopia[vertice][v] == 0) {
+                    removerAresta(vertice, v);
+                }
+    
+                return v;
+            }
+        }
+        return -1;
+    }
+           
 
-        return matrizString.toString();
+    private int encontrarVerticeInicial() {
+        for (int i = 0; i < grafo.length; i++) {
+            if (grauVerticeImpar(i)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int getIndexAresta(int u, int v) {
+        for (int i = 0; i < arestas.size(); i++) {
+            Aresta aresta = arestas.get(i);
+            if ((aresta.getU() == u && aresta.getW() == v) ||
+                (aresta.getU() == v && aresta.getW() == u)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private boolean grauVerticeImpar(int vertice) {
+        // Verificar se o grau do vértice é ímpar
+        int grau = 0;
+        for (int i = 0; i < grafo[vertice].length; i++) {
+            if (grafo[vertice][i] == 1) {
+                grau++;
+            }
+        }
+        return grau % 2 != 0;
+    }
+
+    private int grauVertice(int vertice) {
+        // Verificar o grau do vértice
+        int grau = 0;
+        for (int i = 0; i < grafo[vertice].length; i++) {
+            if (grafo[vertice][i] == 1) {
+                grau++;
+            }
+        }
+        return grau;
     }
 }

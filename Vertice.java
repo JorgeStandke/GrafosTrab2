@@ -1,3 +1,5 @@
+//João Vitor Schmidt e Jorge Henrique Rigo Standke
+
 import java.util.List;
 import java.util.ArrayList;
 

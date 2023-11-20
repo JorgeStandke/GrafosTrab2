@@ -1,3 +1,5 @@
+//João Vitor Schmidt e Jorge Henrique Rigo Standke
+
 public class Aresta {
     private int u;
     private int w;
